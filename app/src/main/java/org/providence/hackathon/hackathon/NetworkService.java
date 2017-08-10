@@ -29,6 +29,7 @@ import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
+import retrofit2.http.Multipart;
 import retrofit2.http.POST;
 import retrofit2.http.Part;
 import rx.Observable;
@@ -51,7 +52,7 @@ public class NetworkService {
         public okhttp3.Response intercept(Chain chain) throws IOException {
             Request originalRequest = chain.request();
 
-            Request.Builder builder = originalRequest.newBuilder().header("Content-Type", "application/json");
+            Request.Builder builder = originalRequest.newBuilder().header("Content-Type", "multipart/form-data");
 
             Request newRequest = builder.build();
             return chain.proceed(newRequest);
@@ -72,11 +73,13 @@ public class NetworkService {
         @POST("/test/text")
         Observable<Response<ApiResponse>> sendTextFeedback(@Body TextFeedback feedback);
 
+        @Multipart
         @POST("/test/photo")
         Observable<Response<ApiResponse>> sendImageFeedback(@Part MultipartBody.Part image, @Part("name") RequestBody name);
 
+        @Multipart
         @POST("/test/voice")
-        Observable<Response<ApiResponse>> sendAudioFeedback(@Part MultipartBody.Part image, @Part("name") RequestBody name);
+        Observable<Response<ApiResponse>> sendAudioFeedback(@Part MultipartBody.Part audio, @Part("name") RequestBody name);
 
         @POST("/metadata-store/_search")
         Observable<Response<List<FeedbackItem>>> getFeedbackItems(@Body SearchCriteria search);
@@ -89,20 +92,22 @@ public class NetworkService {
                 .subscribe(new Subscriber<Response<List<FeedbackItem>>>() {
                     @Override
                     public void onCompleted() {
-
+                        Log.d(TAG, "getFeedbackItems onComplete");
                     }
 
                     @Override
                     public void onError(Throwable e) {
-
+                        Log.d(TAG, e.getMessage());
                     }
 
                     @Override
                     public void onNext(Response<List<FeedbackItem>> listResponse) {
                         Intent intent = new Intent();
                         intent.setAction(FeedbackItemListActivity.FEEDBACK_LIST_RETRIEVED_ACTION);
-                        intent.putParcelableArrayListExtra(FeedbackItemListActivity.LIST_KEY,
-                                new ArrayList<Parcelable>(listResponse.body()));
+                        if (listResponse.body() != null) {
+                            intent.putParcelableArrayListExtra(FeedbackItemListActivity.LIST_KEY,
+                                    new ArrayList<Parcelable>(listResponse.body()));
+                        }
                         context.sendBroadcast(intent);
                     }
                 });

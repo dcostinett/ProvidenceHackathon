@@ -3,11 +3,13 @@ package org.providence.hackathon.hackathon;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
+import org.providence.hackathon.hackathon.customview.VisualizerView;
 import org.providence.hackathon.hackathon.model.AudioFeedback;
 
 import java.io.File;
@@ -21,6 +23,7 @@ import okhttp3.RequestBody;
 
 public class RecordingActivity extends BaseActivity {
     private static final String LOG_TAG = RecordingActivity.class.getSimpleName();
+    public static final int REPEAT_INTERVAL = 40;
 
     private MediaRecorder mRecorder;
     private MediaPlayer   mPlayer = null;
@@ -28,6 +31,7 @@ public class RecordingActivity extends BaseActivity {
 
     private boolean mStartRecording = true;
     private boolean mStartPlaying = true;
+    private Handler mHandler;
 
     @BindView(R.id.btnToggleRecording)
     Button btnRecordAudio;
@@ -35,6 +39,8 @@ public class RecordingActivity extends BaseActivity {
     @BindView(R.id.btnPlayFeedback)
     Button btnPlayFeedback;
 
+    @BindView(R.id.visualizer)
+    VisualizerView visualizer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,6 +69,8 @@ public class RecordingActivity extends BaseActivity {
 
         mStartRecording = true;
         mStartPlaying = true;
+
+        mHandler = new Handler();
     }
 
     @Override
@@ -124,11 +132,14 @@ public class RecordingActivity extends BaseActivity {
         }
 
         mRecorder.start();
+        mHandler.post(updateVisualizer);
     }
 
     private void stopRecording() {
-        mRecorder.stop();
-        mRecorder.release();
+        if (mRecorder != null) {
+            mRecorder.stop();
+            mRecorder.release();
+        }
         mRecorder = null;
     }
 
@@ -153,12 +164,15 @@ public class RecordingActivity extends BaseActivity {
     }
 
     public void onFinishClicked(View view) {
+        stopRecording();
+        mHandler.removeCallbacks(updateVisualizer);
+        visualizer.clear();
         // send audio file to server, finish();
         File audioFeedback = new File(mAudioFileName);
 
-        RequestBody feedbackRequest = RequestBody.create(MediaType.parse("audio/mpeg"), audioFeedback);
+        RequestBody feedbackRequest = RequestBody.create(MediaType.parse("multipart/form-data"), audioFeedback);
         MultipartBody.Part body = MultipartBody.Part.createFormData("upload", audioFeedback.getName(), feedbackRequest);
-        RequestBody name = RequestBody.create(MediaType.parse("text/plain"), "feedback_audio");
+        RequestBody name = RequestBody.create(MediaType.parse("multipart/form-data"), "feedback_audio");
 
         if (audioFeedback.exists()) {
             service.postAudioFeedback(this, new AudioFeedback(body, name));
@@ -166,4 +180,21 @@ public class RecordingActivity extends BaseActivity {
 
         finish();
     }
+
+    // updates the visualizer every 50 milliseconds
+    Runnable updateVisualizer = new Runnable() {
+        @Override
+        public void run() {
+            if (!mStartRecording) // if we are already recording
+            {
+                // get the current amplitude
+                int x = mRecorder.getMaxAmplitude();
+                visualizer.addAmplitude(x); // update the VisualizeView
+                visualizer.invalidate(); // refresh the VisualizerView
+
+                // update in 40 milliseconds
+                mHandler.postDelayed(this, REPEAT_INTERVAL);
+            }
+        }
+    };
 }

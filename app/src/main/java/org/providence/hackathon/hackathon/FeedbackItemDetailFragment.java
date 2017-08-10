@@ -9,7 +9,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import org.providence.hackathon.hackathon.model.DummyContent;
+import org.providence.hackathon.hackathon.model.FeedbackItem;
+
 
 /**
  * A fragment representing a single FeedbackItem detail screen.
@@ -27,7 +28,7 @@ public class FeedbackItemDetailFragment extends Fragment {
     /**
      * The dummy content this fragment is presenting.
      */
-    private DummyContent.FeedbackItem mItem;
+    private FeedbackItem mItem;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -41,15 +42,13 @@ public class FeedbackItemDetailFragment extends Fragment {
         super.onCreate(savedInstanceState);
 
         if (getArguments().containsKey(ARG_ITEM_ID)) {
-            // Load the dummy content specified by the fragment
-            // arguments. In a real-world scenario, use a Loader
-            // to load content from a content provider.
-            mItem = DummyContent.ITEM_MAP.get(getArguments().getString(ARG_ITEM_ID));
+            // TODO call the details endpoint with the ARG_ITM_ID (objectKey) and show that object
+            mItem = new FeedbackItem(getArguments().getString(ARG_ITEM_ID));
 
             Activity activity = this.getActivity();
             CollapsingToolbarLayout appBarLayout = (CollapsingToolbarLayout) activity.findViewById(R.id.toolbar_layout);
             if (appBarLayout != null) {
-                appBarLayout.setTitle(mItem.content);
+                appBarLayout.setTitle(mItem.getContent().getObjectKey());
             }
         }
     }
@@ -59,9 +58,8 @@ public class FeedbackItemDetailFragment extends Fragment {
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.feedbackitem_detail, container, false);
 
-        // Show the dummy content as text in a TextView.
         if (mItem != null) {
-            ((TextView) rootView.findViewById(R.id.feedbackitem_detail)).setText(mItem.details);
+            ((TextView) rootView.findViewById(R.id.feedbackitem_detail)).setText(mItem.getContent().getObjectKey());
         }
 
         return rootView;

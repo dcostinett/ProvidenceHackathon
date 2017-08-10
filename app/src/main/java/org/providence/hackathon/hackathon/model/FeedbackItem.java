@@ -24,6 +24,13 @@ public class FeedbackItem implements Parcelable {
         return _source;
     }
 
+    public FeedbackItem() {
+    }
+
+    public FeedbackItem(String _id) {
+        this._id = _id;
+    }
+
     protected FeedbackItem(Parcel in) {
         _type = in.readString();
         _id = in.readString();

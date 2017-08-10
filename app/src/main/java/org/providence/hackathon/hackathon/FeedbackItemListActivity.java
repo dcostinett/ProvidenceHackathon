@@ -19,11 +19,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-
-import org.providence.hackathon.hackathon.model.DummyContent;
 import org.providence.hackathon.hackathon.model.FeedbackItem;
 import org.providence.hackathon.hackathon.model.SearchCriteria;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
@@ -44,7 +43,7 @@ public class FeedbackItemListActivity extends BaseActivity {
     public static final String LIST_KEY = "feedbackList";
 
     private RecyclerView mRecyclerView = null;
-    private List<FeedbackItem> mFeedbackItems;
+    private List<FeedbackItem> mFeedbackItems = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -183,7 +182,9 @@ public class FeedbackItemListActivity extends BaseActivity {
 
             switch (action) {
                 case FEEDBACK_LIST_RETRIEVED_ACTION:
-                    mFeedbackItems = intent.getParcelableArrayListExtra(LIST_KEY);
+                    if (intent.getParcelableArrayListExtra(LIST_KEY) != null) {
+                        mFeedbackItems = intent.getParcelableArrayListExtra(LIST_KEY);
+                    }
                     setupAdapter();
                     break;
             }
