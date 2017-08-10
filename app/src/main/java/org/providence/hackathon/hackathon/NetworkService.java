@@ -2,15 +2,21 @@ package org.providence.hackathon.hackathon;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.Parcelable;
 import android.util.Log;
 
 import org.providence.hackathon.hackathon.model.ApiResponse;
 import org.providence.hackathon.hackathon.model.AudioFeedback;
+import org.providence.hackathon.hackathon.model.FeedbackItem;
 import org.providence.hackathon.hackathon.model.ImageFeedback;
+import org.providence.hackathon.hackathon.model.SearchCriteria;
 import org.providence.hackathon.hackathon.model.TextFeedback;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.LineNumberInputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 import okhttp3.Interceptor;
 import okhttp3.MultipartBody;
@@ -22,6 +28,7 @@ import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.http.Body;
+import retrofit2.http.GET;
 import retrofit2.http.POST;
 import retrofit2.http.Part;
 import rx.Observable;
@@ -70,6 +77,35 @@ public class NetworkService {
 
         @POST("/test/voice")
         Observable<Response<ApiResponse>> sendAudioFeedback(@Part MultipartBody.Part image, @Part("name") RequestBody name);
+
+        @POST("/metadata-store/_search")
+        Observable<Response<List<FeedbackItem>>> getFeedbackItems(@Body SearchCriteria search);
+    }
+
+    public void getFeedbackItems(final Context context, SearchCriteria search) {
+        mClient.getFeedbackItems(search)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Subscriber<Response<List<FeedbackItem>>>() {
+                    @Override
+                    public void onCompleted() {
+
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+
+                    }
+
+                    @Override
+                    public void onNext(Response<List<FeedbackItem>> listResponse) {
+                        Intent intent = new Intent();
+                        intent.setAction(FeedbackItemListActivity.FEEDBACK_LIST_RETRIEVED_ACTION);
+                        intent.putParcelableArrayListExtra(FeedbackItemListActivity.LIST_KEY,
+                                new ArrayList<Parcelable>(listResponse.body()));
+                        context.sendBroadcast(intent);
+                    }
+                });
     }
 
     public void postTextFeedback(final Context context, final TextFeedback feedback) {

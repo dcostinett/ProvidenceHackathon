@@ -16,12 +16,12 @@ public class DummyContent {
     /**
      * An array of sample (dummy) items.
      */
-    public static final List<FeedbackItem> ITEMS = new ArrayList<FeedbackItem>();
+    public static final List<DummyFeedbackItem> ITEMS = new ArrayList<DummyFeedbackItem>();
 
     /**
      * A map of sample (dummy) items, by ID.
      */
-    public static final Map<String, FeedbackItem> ITEM_MAP = new HashMap<String, FeedbackItem>();
+    public static final Map<String, DummyFeedbackItem> ITEM_MAP = new HashMap<String, DummyFeedbackItem>();
 
     public enum FeedbackType {
         VOICE,
@@ -39,13 +39,13 @@ public class DummyContent {
         }
     }
 
-    private static void addItem(FeedbackItem item) {
+    private static void addItem(DummyFeedbackItem item) {
         ITEMS.add(item);
         ITEM_MAP.put(item.id, item);
     }
 
-    private static FeedbackItem createDummyItem(int position) {
-        return new FeedbackItem(String.valueOf(position), getType(position), "Item " + position, makeDetails(position));
+    private static DummyFeedbackItem createDummyItem(int position) {
+        return new DummyFeedbackItem(String.valueOf(position), getType(position), "Item " + position, makeDetails(position));
     }
 
     private static String getType(int position) {
@@ -72,13 +72,13 @@ public class DummyContent {
     /**
      * A dummy item representing a piece of content.
      */
-    public static class FeedbackItem {
+    public static class DummyFeedbackItem {
         public final String id;
         public final String type;
         public final String content;
         public final String details;
 
-        public FeedbackItem(String id, String type, String content, String details) {
+        public DummyFeedbackItem(String id, String type, String content, String details) {
             this.id = id;
             this.type = type;
             this.content = content;
