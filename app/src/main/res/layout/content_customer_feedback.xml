@@ -47,8 +47,10 @@
 
     <EditText
         android:id="@+id/feedbackText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:background="@drawable/feedback_background"
+        android:gravity="bottom"
+        android:layout_height="320dp"
         android:layout_marginBottom="8dp"
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"

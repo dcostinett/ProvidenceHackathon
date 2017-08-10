@@ -27,6 +27,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -76,7 +77,7 @@ public class CustomerFeedbackActivity extends BaseActivity implements LocationLi
     Button btnAudioFeedback;
 
     @BindView(R.id.feedbackText)
-    EditText textFeedback;
+    EditText mTextFeedback;
 
     @BindView(R.id.btnSubmit)
     Button btnSubmit;
@@ -133,12 +134,14 @@ public class CustomerFeedbackActivity extends BaseActivity implements LocationLi
 
     @OnClick(R.id.btnTypeFeedback)
     public void onTypeFeedbackClicked() {
-        textFeedback.setVisibility(View.VISIBLE);
+        mTextFeedback.setVisibility(View.VISIBLE);
         btnSubmit.setVisibility(View.VISIBLE);
         btnSubmit.setEnabled(false);
+        InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
 
-        textFeedback.requestFocus();
-        textFeedback.addTextChangedListener(new TextWatcher() {
+        mTextFeedback.requestFocus();
+        mTextFeedback.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
             }
@@ -149,7 +152,7 @@ public class CustomerFeedbackActivity extends BaseActivity implements LocationLi
 
             @Override
             public void afterTextChanged(Editable s) {
-                if (textFeedback.getText().length() > 0) {
+                if (mTextFeedback.getText().length() > 0) {
                     btnSubmit.setEnabled(true);
                 } else {
                     btnSubmit.setEnabled(false);
@@ -223,7 +226,7 @@ public class CustomerFeedbackActivity extends BaseActivity implements LocationLi
 
     @OnClick(R.id.btnSubmit)
     public void onSubmitClicked() {
-        String theFeedback = textFeedback.getText().toString();
+        String theFeedback = mTextFeedback.getText().toString();
         TextFeedback textFeedback = new TextFeedback(theFeedback);
 
         service.postTextFeedback(this, textFeedback);
@@ -375,7 +378,9 @@ public class CustomerFeedbackActivity extends BaseActivity implements LocationLi
 
             switch (action) {
                 case TEXT_FEEDBACK_SENT_ACTION:
-                    textFeedback.setText("");
+                    mTextFeedback.setText("");
+                    mTextFeedback.setVisibility(View.INVISIBLE);
+                    btnSubmit.setVisibility(View.INVISIBLE);
                     Toast.makeText(CustomerFeedbackActivity.this, "Feedback sent to server", Toast.LENGTH_LONG).show();
                     break;
                 case AUDIO_FEEDBACK_SENT_ACTION :
