@@ -5,9 +5,11 @@ import android.content.Intent;
 import android.util.Log;
 
 import org.providence.hackathon.hackathon.model.ApiResponse;
+import org.providence.hackathon.hackathon.model.AudioFeedback;
 import org.providence.hackathon.hackathon.model.ImageFeedback;
 import org.providence.hackathon.hackathon.model.TextFeedback;
 
+import java.io.File;
 import java.io.IOException;
 
 import okhttp3.Interceptor;
@@ -96,7 +98,32 @@ public class NetworkService {
                 });
     }
 
-    public void postImageFeedback(final Context context, ImageFeedback feedback) {
+    public void postAudioFeedback(final Context context, final AudioFeedback feedback) {
+        mClient.sendAudioFeedback(feedback.audio, feedback.name)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new rx.Subscriber<Response<ApiResponse>>() {
+                   @Override
+                   public void onCompleted() {
+                       Log.d(TAG, "postAudioFeedback onComplete");
+                       Intent intent = new Intent();
+                       intent.setAction(CustomerFeedbackActivity.AUDIO_FEEDBACK_SENT_ACTION);
+                       context.sendBroadcast(intent);
+                   }
+
+                   @Override
+                   public void onError(Throwable e) {
+                       Log.d(TAG, "Error posting audio");
+                   }
+
+                   @Override
+                   public void onNext(Response<ApiResponse> apiResponseResponse) {
+
+                   }
+                });
+    }
+
+    public void postImageFeedback(final Context context, final ImageFeedback feedback) {
         mClient.sendImageFeedback(feedback.image, feedback.name)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -111,7 +138,7 @@ public class NetworkService {
 
                     @Override
                     public void onError(Throwable e) {
-
+                        Log.d(TAG, "Error posting image");
                     }
 
                     @Override

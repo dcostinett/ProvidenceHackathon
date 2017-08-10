@@ -66,10 +66,6 @@ public class CustomerFeedbackActivity extends BaseActivity implements LocationLi
     private LocationManager locationManager;
     private Location lastLocation;
 
-    private MediaRecorder mRecorder;
-    private static String mAudioFileName = null;
-    private boolean mRecording = false;
-
     @BindView(R.id.btnTypeFeedback)
     Button btnTextFeedback;
 
@@ -108,9 +104,6 @@ public class CustomerFeedbackActivity extends BaseActivity implements LocationLi
             String userEmail = getIntent().getStringExtra(EXTRA_USER_EMAIL);
             // save email, determine if manager access allowed, etc.
         }
-
-        mAudioFileName = getExternalCacheDir().getAbsolutePath();
-        mAudioFileName += "/feedbackAudio.mp3";
     }
 
     @Override
@@ -167,8 +160,13 @@ public class CustomerFeedbackActivity extends BaseActivity implements LocationLi
 
     @OnClick(R.id.btnTakePhoto)
     public void onTakePhotoClicked() {
-        ActivityCompat.requestPermissions(this,
-                new String[] {Manifest.permission.CAMERA}, IMAGE_CAPTURE_REQUEST_CODE);
+        if (ActivityCompat.checkSelfPermission(this,
+                Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,
+                    new String[] {Manifest.permission.CAMERA}, IMAGE_CAPTURE_REQUEST_CODE);
+        } else {
+            doImageCapture();
+        }
     }
 
     private void doImageCapture() {
@@ -180,32 +178,19 @@ public class CustomerFeedbackActivity extends BaseActivity implements LocationLi
 
     @OnClick(R.id.btnRecordAudio)
     public void onRecordAudioClicked() {
-        if (!mRecording) {
+        if (ActivityCompat.checkSelfPermission(this,
+                Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this,
                     new String[] {Manifest.permission.RECORD_AUDIO}, AUDIO_RECORD_REQUEST_CODE);
         } else {
-            btnAudioFeedback.setText(R.string.record_audio);
-            mRecording = false;
-            // now upload the audio file
+            doRecordAudio();
         }
     }
 
+
     private void doRecordAudio() {
-        btnAudioFeedback.setText(R.string.stop_recording);
-        mRecording = true;
-        mRecorder = new MediaRecorder();
-        mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-        mRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
-        mRecorder.setOutputFile(mAudioFileName);
-        mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
-
-        try {
-            mRecorder.prepare();
-        } catch (IOException e) {
-            Log.e(TAG, "prepare() failed");
-        }
-
-        mRecorder.start();
+        Intent intent = new Intent(this, RecordingActivity.class);
+        startActivityForResult(intent, AUDIO_RECORD_REQUEST_CODE);
     }
 
     @Override
@@ -250,7 +235,10 @@ public class CustomerFeedbackActivity extends BaseActivity implements LocationLi
 
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         startLocation();
-        registerReceiver(feedbackCompletedReceiver, new IntentFilter(TEXT_FEEDBACK_SENT_ACTION));
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(TEXT_FEEDBACK_SENT_ACTION);
+        filter.addAction(AUDIO_FEEDBACK_SENT_ACTION);
+        registerReceiver(feedbackCompletedReceiver, filter);
     }
 
     @Override
@@ -259,11 +247,6 @@ public class CustomerFeedbackActivity extends BaseActivity implements LocationLi
         locationManager = null;
 
         unregisterReceiver(feedbackCompletedReceiver);
-
-        if (mRecorder != null) {
-            mRecorder.release();
-            mRecorder = null;
-        }
 
         super.onStop();
     }
@@ -394,6 +377,10 @@ public class CustomerFeedbackActivity extends BaseActivity implements LocationLi
                 case TEXT_FEEDBACK_SENT_ACTION:
                     textFeedback.setText("");
                     Toast.makeText(CustomerFeedbackActivity.this, "Feedback sent to server", Toast.LENGTH_LONG).show();
+                    break;
+                case AUDIO_FEEDBACK_SENT_ACTION :
+                    Toast.makeText(CustomerFeedbackActivity.this, "Audio feedback sent", Toast.LENGTH_LONG).show();
+                    break;
             }
         }
     };

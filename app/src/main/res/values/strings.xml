@@ -4,4 +4,5 @@
     <string name="title_activity_customet_feedback">CustometFeedbackActivity</string>
     <string name="stop_recording">Stop Recording</string>
     <string name="record_audio">Record Audio</string>
+    <string name="title_activity_recording">RecordingActivity</string>
 </resources>
