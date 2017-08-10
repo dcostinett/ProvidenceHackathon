@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Hackathon</string>
+    <string name="title_feedbackitem_detail">FeedbackItem Detail</string>
+    <string name="title_activity_customet_feedback">CustometFeedbackActivity</string>
+    <string name="stop_recording">Stop Recording</string>
+    <string name="record_audio">Record Audio</string>
+</resources>

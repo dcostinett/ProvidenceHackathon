@@ -1,0 +1,69 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 25
+    buildToolsVersion "25.0.2"
+    defaultConfig {
+        applicationId "org.providence.hackathon.hackathon"
+        minSdkVersion 24
+        targetSdkVersion 25
+        versionCode 1
+        versionName "1.0"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+ext {
+    supportLibraryVersion = '25.3.1'
+    retrofitVersion = '2.1.0'
+    retrofitAdapterVersion = '2.0.2'
+    rxVersion = '1.2.1'
+    daggerVersion = '2.9'
+    butterknifeVersion = '8.5.1'
+    loggingInterceptorVersion = '3.3.1'
+    playServicesVersion = '11.0.4'
+    glideVersion = '3.7.0'
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile "com.android.support:appcompat-v7:${supportLibraryVersion}"
+    compile "com.android.support:support-v4:${supportLibraryVersion}"
+    compile "com.android.support:recyclerview-v7:${supportLibraryVersion}"
+    compile "com.android.support:design:${supportLibraryVersion}"
+    compile "com.android.support.constraint:constraint-layout:1.0.2"
+
+    compile "com.google.android.gms:play-services-location:${playServicesVersion}"
+    compile "com.google.android.gms:play-services-maps:${playServicesVersion}"
+
+    compile "com.github.bumptech.glide:glide:${glideVersion}"
+
+    compile "com.squareup.okhttp3:logging-interceptor:${loggingInterceptorVersion}"
+
+    compile "com.squareup.retrofit2:retrofit:${retrofitVersion}"
+    compile "com.squareup.retrofit2:converter-gson:${retrofitVersion}"
+    compile "com.squareup.retrofit2:adapter-rxjava:${retrofitAdapterVersion}"
+
+    compile "io.reactivex:rxandroid:${rxVersion}"
+    compile "io.reactivex:rxjava:${rxVersion}"
+
+    compile "com.google.dagger:dagger:${daggerVersion}"
+    annotationProcessor "com.google.dagger:dagger-compiler:${daggerVersion}"
+
+    compile ("com.jakewharton:butterknife:${butterknifeVersion}") {
+        exclude group: 'com.android.support', module: 'support-annotations'
+        exclude group: 'com.android.support', module: 'support-compat'
+    }
+    annotationProcessor "com.jakewharton:butterknife-compiler:${butterknifeVersion}"
+
+    testCompile 'junit:junit:4.12'
+    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+}
