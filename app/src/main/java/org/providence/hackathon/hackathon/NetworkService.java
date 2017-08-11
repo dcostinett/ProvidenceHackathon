@@ -151,6 +151,9 @@ public class NetworkService {
                     @Override
                     public void onError(Throwable e) {
                         Log.d(TAG, "postTextFeedback onError: " + e.getMessage());
+                        Intent intent = new Intent();
+                        intent.setAction(CustomerFeedbackActivity.TEXT_FEEDBACK_SENT_ACTION);
+                        context.sendBroadcast(intent);
                     }
 
                     @Override
@@ -177,6 +180,9 @@ public class NetworkService {
                    @Override
                    public void onError(Throwable e) {
                        Log.d(TAG, "Error posting audio: " + e.getMessage());
+                       Intent intent = new Intent();
+                       intent.setAction(CustomerFeedbackActivity.AUDIO_FEEDBACK_SENT_ACTION);
+                       context.sendBroadcast(intent);
                    }
 
                    @Override
@@ -203,6 +209,9 @@ public class NetworkService {
                     @Override
                     public void onError(Throwable e) {
                         Log.d(TAG, "Error posting image: " + e.getMessage());
+                        Intent intent = new Intent();
+                        intent.setAction(CustomerFeedbackActivity.IMAGE_FEEDBACK_SENT_ACTION);
+                        context.sendBroadcast(intent);
                     }
 
                     @Override
