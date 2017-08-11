@@ -1,7 +1,10 @@
 package org.providence.hackathon.hackathon;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
@@ -10,12 +13,15 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.AppCompatImageView;
+import android.support.v7.widget.AppCompatTextView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+
+import org.providence.hackathon.hackathon.model.FeedbackItem;
 
 import java.io.IOException;
 
@@ -37,7 +43,7 @@ public class FeedbackItemDetailFragment extends Fragment {
     public static final String ARG_ITEM_TYPE = "item_type";
     public static final String EXTRA_FEEDBACK_RESULT = "objectDetailsResult";
     public static final String EXTRA_FEEDBACK_OBJECT = "objectDetails";
-    public static final String TEXT_REVRIEVED_ACTION = "textItemRetrieved";
+    public static final String TEXT_RETRIEVED_ACTION = "textItemRetrieved";
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -50,7 +56,7 @@ public class FeedbackItemDetailFragment extends Fragment {
     AppCompatImageView feedbackImage;
 
     @BindView(R.id.feedbackText)
-    AppCompatImageView feedbackText;
+    AppCompatTextView feedbackText;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -70,10 +76,12 @@ public class FeedbackItemDetailFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+        getActivity().registerReceiver(textFeedbackReceiver, new IntentFilter(TEXT_RETRIEVED_ACTION));
     }
 
     @Override
     public void onPause() {
+        getActivity().unregisterReceiver(textFeedbackReceiver);
         super.onPause();
     }
 
@@ -143,4 +151,19 @@ public class FeedbackItemDetailFragment extends Fragment {
 
         return "unknown";
     }
+
+    BroadcastReceiver textFeedbackReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            final String action = intent.getAction();
+
+            switch (action) {
+                case TEXT_RETRIEVED_ACTION:
+                    if (intent.getStringExtra(EXTRA_FEEDBACK_RESULT) != null) {
+                        String textFeedback = intent.getStringExtra(EXTRA_FEEDBACK_RESULT);
+                        feedbackText.setText(textFeedback);
+                    }
+            }
+        }
+    };
 }

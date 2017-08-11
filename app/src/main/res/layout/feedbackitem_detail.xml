@@ -4,13 +4,13 @@
     android:layout_height="match_parent"
     android:layout_width="match_parent" >
 
-<TextView
-    android:id="@+id/feedbackitem_detail"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:padding="16dp"
-    android:textIsSelectable="true"
-    tools:context="org.providence.hackathon.hackathon.FeedbackItemDetailFragment" />
+    <TextView
+        android:id="@+id/feedbackitem_detail"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="16dp"
+        android:textIsSelectable="true"
+        tools:context="org.providence.hackathon.hackathon.FeedbackItemDetailFragment" />
 
     <android.support.v7.widget.AppCompatImageView
         android:id="@+id/feedbackImage"
@@ -22,5 +22,8 @@
         android:id="@+id/feedbackText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_below="@id/feedbackitem_detail"
+        android:layout_marginLeft="16dp"
+        android:textSize="24sp"
         android:visibility="invisible" />
 </RelativeLayout>

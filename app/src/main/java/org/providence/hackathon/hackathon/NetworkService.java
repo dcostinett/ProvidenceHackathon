@@ -101,8 +101,8 @@ public class NetworkService {
         @GET("/test/voice/{id}")
         Observable<Response<FeedbackItem>> getAudioDetail(@Path("id") String objectKey);
 
-        @GET("/test/text/{id}")
-        Observable<Response<FeedbackItem>> getTextDetail(@Path("id") String objectKey);
+        @GET("{path}")
+        Observable<Response<TextFeedback>> getTextDetail(@Path(value = "path", encoded = true) String objectKey);
     }
 
     public void getFeedbackItems(final Context context, SearchCriteria search) {
@@ -216,23 +216,23 @@ public class NetworkService {
         mClient.getTextDetail(path)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Subscriber<Response<FeedbackItem>>() {
+                .subscribe(new Subscriber<Response<TextFeedback>>() {
                     @Override
                     public void onCompleted() {
-
+                        Log.d(TAG, "getTextFeedback onComplete");
                     }
 
                     @Override
                     public void onError(Throwable e) {
-
+                        Log.d(TAG, "getTextFeedback onError: " + e.getMessage());
                     }
 
                     @Override
-                    public void onNext(Response<FeedbackItem> feedbackItemResponse) {
+                    public void onNext(Response<TextFeedback> feedbackItemResponse) {
                         Intent intent = new Intent();
-                        intent.setAction(FeedbackItemDetailFragment.TEXT_REVRIEVED_ACTION);
+                        intent.setAction(FeedbackItemDetailFragment.TEXT_RETRIEVED_ACTION);
                         if (feedbackItemResponse != null) {
-                            intent.putExtra(FeedbackItemDetailFragment.EXTRA_FEEDBACK_RESULT, feedbackItemResponse.body());
+                            intent.putExtra(FeedbackItemDetailFragment.EXTRA_FEEDBACK_RESULT, feedbackItemResponse.body().feedback);
                         }
                         context.sendBroadcast(intent);
                     }
