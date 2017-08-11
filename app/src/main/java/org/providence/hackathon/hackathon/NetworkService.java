@@ -211,4 +211,31 @@ public class NetworkService {
                     }
                 });
     }
+
+    public void getTextFeedback(final Context context, final String path) {
+        mClient.getTextDetail(path)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Subscriber<Response<FeedbackItem>>() {
+                    @Override
+                    public void onCompleted() {
+
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+
+                    }
+
+                    @Override
+                    public void onNext(Response<FeedbackItem> feedbackItemResponse) {
+                        Intent intent = new Intent();
+                        intent.setAction(FeedbackItemDetailFragment.TEXT_REVRIEVED_ACTION);
+                        if (feedbackItemResponse != null) {
+                            intent.putExtra(FeedbackItemDetailFragment.EXTRA_FEEDBACK_RESULT, feedbackItemResponse.body());
+                        }
+                        context.sendBroadcast(intent);
+                    }
+                });
+    }
 }

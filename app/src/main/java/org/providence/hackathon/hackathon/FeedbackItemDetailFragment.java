@@ -37,7 +37,7 @@ public class FeedbackItemDetailFragment extends Fragment {
     public static final String ARG_ITEM_TYPE = "item_type";
     public static final String EXTRA_FEEDBACK_RESULT = "objectDetailsResult";
     public static final String EXTRA_FEEDBACK_OBJECT = "objectDetails";
-    public static final String DETAILS_RETRIEVED_ACTION = "objectDetailsRetrieved";
+    public static final String TEXT_REVRIEVED_ACTION = "textItemRetrieved";
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -48,6 +48,9 @@ public class FeedbackItemDetailFragment extends Fragment {
 
     @BindView(R.id.feedbackImage)
     AppCompatImageView feedbackImage;
+
+    @BindView(R.id.feedbackText)
+    AppCompatImageView feedbackText;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -87,11 +90,14 @@ public class FeedbackItemDetailFragment extends Fragment {
             switch (type) {
                 case "images":
                     feedbackImage.setVisibility(View.VISIBLE);
+                    feedbackText.setVisibility(View.INVISIBLE);
                     Glide.with(getActivity()).load(Uri.parse(
                             NetworkService.BASE_URL + path)).into(feedbackImage);
 
                     break;
                 case "audio":
+                    feedbackImage.setVisibility(View.INVISIBLE);
+                    feedbackText.setVisibility(View.INVISIBLE);
                     MediaPlayer player = new MediaPlayer();
                     player.setAudioStreamType(AudioManager.STREAM_MUSIC);
                     try {
@@ -101,6 +107,13 @@ public class FeedbackItemDetailFragment extends Fragment {
                         e.printStackTrace();
                     }
                     player.start();
+                    break;
+                case "text":
+                    feedbackImage.setVisibility(View.INVISIBLE);
+                    feedbackText.setVisibility(View.VISIBLE);
+                    ((BaseActivity) getActivity()).service.getTextFeedback(getActivity(), path);
+                    break;
+
             }
 
             Activity activity = this.getActivity();
@@ -124,6 +137,8 @@ public class FeedbackItemDetailFragment extends Fragment {
                 return "images";
             case "mp3":
                 return "audio";
+            case "txt":
+                return "text";
         }
 
         return "unknown";

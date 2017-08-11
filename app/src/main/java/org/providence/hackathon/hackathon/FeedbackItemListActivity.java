@@ -108,6 +108,8 @@ public class FeedbackItemListActivity extends BaseActivity {
                 return "images";
             case "mp3":
                 return "audio";
+            case "txt":
+                return "text";
         }
 
         return "unknown";
@@ -157,7 +159,7 @@ public class FeedbackItemListActivity extends BaseActivity {
                     return R.drawable.ic_mic_black_24px;
                 case "images":
                     return R.drawable.ic_camera_enhance_black_24px;
-                case "TEXT":
+                case "text":
                     return R.drawable.ic_list_black_24px;
                 case "VIDEO":
                     return R.drawable.ic_videocam_black_24px;
