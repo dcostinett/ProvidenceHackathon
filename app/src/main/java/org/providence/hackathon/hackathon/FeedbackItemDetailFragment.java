@@ -82,7 +82,6 @@ public class FeedbackItemDetailFragment extends Fragment {
         ButterKnife.bind(this, rootView);
 
         if (getArguments().containsKey(ARG_ITEM_OBJECT_KEY)) {
-            // TODO call the details endpoint with the ARG_ITM_ID (objectKey) and show that object
             String path = getArguments().getString(ARG_ITEM_OBJECT_KEY);
             String type = getType(path);
             switch (type) {

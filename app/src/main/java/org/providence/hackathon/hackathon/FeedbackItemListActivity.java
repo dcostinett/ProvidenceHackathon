@@ -100,6 +100,19 @@ public class FeedbackItemListActivity extends BaseActivity {
         context.startActivity(intent);
     }
 
+
+    private String getType(String path) {
+        String ext = path.substring(path.lastIndexOf(".") + 1, path.length());
+        switch (ext) {
+            case "jpg":
+                return "images";
+            case "mp3":
+                return "audio";
+        }
+
+        return "unknown";
+    }
+
     public class SimpleItemRecyclerViewAdapter
             extends RecyclerView.Adapter<SimpleItemRecyclerViewAdapter.ViewHolder> {
 
@@ -138,8 +151,9 @@ public class FeedbackItemListActivity extends BaseActivity {
 
         @Override
         public int getItemViewType(int position) {
-            switch (mValues.get(position).getType()) {
-                case "VOICE":
+            String type = getType(mValues.get(position).getContent().getObjectKey());
+            switch (type) {
+                case "audio":
                     return R.drawable.ic_mic_black_24px;
                 case "images":
                     return R.drawable.ic_camera_enhance_black_24px;
