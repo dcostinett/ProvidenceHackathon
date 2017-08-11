@@ -60,9 +60,12 @@ public class CustomerFeedbackActivity extends BaseActivity implements LocationLi
     private static final int LOCATION_REQUEST_CODE = 100;
     private static final int IMAGE_CAPTURE_REQUEST_CODE = 200;
     private static final int AUDIO_RECORD_REQUEST_CODE = 300;
+    private static final int WRITE_EXTERNAL_STORAGE_REQUEST = 400;
 
     private static final long ONE_MINUTE = 60 * 1000;
     private static final float MIN_DISTANCE = 250; // meters
+
+    ByteArrayOutputStream mBytes = new ByteArrayOutputStream();
 
     private LocationManager locationManager;
     private Location lastLocation;
@@ -201,27 +204,36 @@ public class CustomerFeedbackActivity extends BaseActivity implements LocationLi
         if (requestCode == IMAGE_CAPTURE_REQUEST_CODE && resultCode == RESULT_OK) {
             Bundle extras = data.getExtras();
             Bitmap thumbnail = (Bitmap) extras.get("data");
-            ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-            thumbnail.compress(Bitmap.CompressFormat.JPEG, 100, bytes);
-            File feedbackImage = new File(Environment.getExternalStorageDirectory(),"feedbackImage.jpg");
-            FileOutputStream fo;
-            try {
-                fo = new FileOutputStream(feedbackImage);
-                fo.write(bytes.toByteArray());
-                fo.close();
-            } catch (IOException e) {
-                e.printStackTrace();
+            thumbnail.compress(Bitmap.CompressFormat.JPEG, 100, mBytes);
+            if (ActivityCompat.checkSelfPermission(this,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this,
+                        new String[] {Manifest.permission.WRITE_EXTERNAL_STORAGE}, WRITE_EXTERNAL_STORAGE_REQUEST);
+            } else {
+                doImageUpload(mBytes);
             }
-
-            Log.d(TAG, "Image captured");
-            // now upload bitmap to server
-
-            RequestBody feedbackRequest = RequestBody.create(MediaType.parse("image/jpeg"), feedbackImage);
-            MultipartBody.Part body = MultipartBody.Part.createFormData("upload", feedbackImage.getName(), feedbackRequest);
-            RequestBody name = RequestBody.create(MediaType.parse("text/plain"), "feedback_image");
-
-            service.postImageFeedback(this, new ImageFeedback(body, name));
         }
+    }
+
+    private void doImageUpload(ByteArrayOutputStream bytes) {
+        File feedbackImage = new File(Environment.getExternalStorageDirectory(), "feedbackImage.jpg");
+        FileOutputStream fo;
+        try {
+            fo = new FileOutputStream(feedbackImage);
+            fo.write(bytes.toByteArray());
+            fo.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        Log.d(TAG, "Image captured");
+        // now upload bitmap to server
+
+        RequestBody feedbackRequest = RequestBody.create(MediaType.parse("image/jpeg"), feedbackImage);
+        MultipartBody.Part body = MultipartBody.Part.createFormData("upload", feedbackImage.getName(), feedbackRequest);
+        RequestBody name = RequestBody.create(MediaType.parse("multipart/form-data"), "feedback_image");
+
+        service.postImageFeedback(this, new ImageFeedback(body, name));
     }
 
     @OnClick(R.id.btnSubmit)
@@ -241,6 +253,7 @@ public class CustomerFeedbackActivity extends BaseActivity implements LocationLi
         IntentFilter filter = new IntentFilter();
         filter.addAction(TEXT_FEEDBACK_SENT_ACTION);
         filter.addAction(AUDIO_FEEDBACK_SENT_ACTION);
+        filter.addAction(IMAGE_FEEDBACK_SENT_ACTION);
         registerReceiver(feedbackCompletedReceiver, filter);
     }
 
@@ -341,8 +354,11 @@ public class CustomerFeedbackActivity extends BaseActivity implements LocationLi
             if (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 doImageCapture();
             }
+        } else if (requestCode == WRITE_EXTERNAL_STORAGE_REQUEST) {
+            if (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                doImageUpload(mBytes);
+            }
         }
-
     }
 
     private void updateLocation(Location location) {
@@ -383,8 +399,11 @@ public class CustomerFeedbackActivity extends BaseActivity implements LocationLi
                     btnSubmit.setVisibility(View.INVISIBLE);
                     Toast.makeText(CustomerFeedbackActivity.this, "Feedback sent to server", Toast.LENGTH_LONG).show();
                     break;
-                case AUDIO_FEEDBACK_SENT_ACTION :
+                case AUDIO_FEEDBACK_SENT_ACTION:
                     Toast.makeText(CustomerFeedbackActivity.this, "Audio feedback sent", Toast.LENGTH_LONG).show();
+                    break;
+                case IMAGE_FEEDBACK_SENT_ACTION:
+                    Toast.makeText(CustomerFeedbackActivity.this, "Image feedback sent", Toast.LENGTH_LONG).show();
                     break;
             }
         }

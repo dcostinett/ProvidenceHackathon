@@ -4,12 +4,10 @@ import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
-import android.speech.tts.TextToSpeech;
 import android.support.annotation.NonNull;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.AppCompatImageView;
-import android.support.v7.widget.AppCompatTextView;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.support.design.widget.FloatingActionButton;
@@ -24,9 +22,6 @@ import org.providence.hackathon.hackathon.model.SearchCriteria;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import butterknife.BindView;
-import butterknife.ButterKnife;
 
 /**
  * An activity representing a list of FeedbackItems. This activity
@@ -60,6 +55,7 @@ public class FeedbackItemListActivity extends BaseActivity {
             public void onClick(View view) {
                 Snackbar.make(view, "Show items on a map, maybe", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
+                showDetails(FeedbackItemListActivity.this, "AV3NNGZ5d5-Zkqn7f7CB", "images");
             }
         });
 
@@ -72,11 +68,13 @@ public class FeedbackItemListActivity extends BaseActivity {
     protected void onResume() {
         super.onResume();
 
+        registerReceiver(listRetrievedReceiver, new IntentFilter(FEEDBACK_LIST_RETRIEVED_ACTION));
         service.getFeedbackItems(this, new SearchCriteria());
     }
 
     @Override
     protected void onPause() {
+        unregisterReceiver(listRetrievedReceiver);
         super.onPause();
     }
 
@@ -92,6 +90,14 @@ public class FeedbackItemListActivity extends BaseActivity {
 
     public static Intent buildIntent(Context context) {
         return new Intent(context, FeedbackItemListActivity.class);
+    }
+
+    private void showDetails(Context context, final String key, final String type) {
+        Intent intent = new Intent(context, FeedbackItemDetailActivity.class);
+        intent.putExtra(FeedbackItemDetailFragment.ARG_ITEM_OBJECT_KEY, key);
+        intent.putExtra(FeedbackItemDetailFragment.ARG_ITEM_TYPE, type);
+
+        context.startActivity(intent);
     }
 
     public class SimpleItemRecyclerViewAdapter
@@ -120,11 +126,7 @@ public class FeedbackItemListActivity extends BaseActivity {
             holder.mView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Context context = v.getContext();
-                    Intent intent = new Intent(context, FeedbackItemDetailActivity.class);
-                    intent.putExtra(FeedbackItemDetailFragment.ARG_ITEM_ID, holder.mItem.getId());
-
-                    context.startActivity(intent);
+                    showDetails(v.getContext(), holder.mItem.getContent().getObjectKey(), holder.mItem.getType());
                 }
             });
         }

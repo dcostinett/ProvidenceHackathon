@@ -29,6 +29,7 @@ public class FeedbackItem implements Parcelable {
 
     public FeedbackItem(String _id) {
         this._id = _id;
+        _source = new FeedbackSource("test/photo/grumpy_cat.jpg");
     }
 
     protected FeedbackItem(Parcel in) {

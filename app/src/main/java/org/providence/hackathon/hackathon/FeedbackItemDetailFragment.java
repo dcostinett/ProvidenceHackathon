@@ -1,16 +1,24 @@
 package org.providence.hackathon.hackathon;
 
 import android.app.Activity;
-import android.support.design.widget.CollapsingToolbarLayout;
+import android.content.Context;
+import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
+import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.AppCompatImageView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
+
 import org.providence.hackathon.hackathon.model.FeedbackItem;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
 
 /**
  * A fragment representing a single FeedbackItem detail screen.
@@ -23,12 +31,11 @@ public class FeedbackItemDetailFragment extends Fragment {
      * The fragment argument representing the item ID that this fragment
      * represents.
      */
-    public static final String ARG_ITEM_ID = "item_id";
-
-    /**
-     * The dummy content this fragment is presenting.
-     */
-    private FeedbackItem mItem;
+    public static final String ARG_ITEM_OBJECT_KEY = "item_id";
+    public static final String ARG_ITEM_TYPE = "item_type";
+    public static final String EXTRA_FEEDBACK_RESULT = "objectDetailsResult";
+    public static final String EXTRA_FEEDBACK_OBJECT = "objectDetails";
+    public static final String DETAILS_RETRIEVED_ACTION = "objectDetailsRetrieved";
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -37,20 +44,34 @@ public class FeedbackItemDetailFragment extends Fragment {
     public FeedbackItemDetailFragment() {
     }
 
+    @BindView(R.id.feedbackImage)
+    AppCompatImageView feedbackImage;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+    }
 
-        if (getArguments().containsKey(ARG_ITEM_ID)) {
-            // TODO call the details endpoint with the ARG_ITM_ID (objectKey) and show that object
-            mItem = new FeedbackItem(getArguments().getString(ARG_ITEM_ID));
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
 
-            Activity activity = this.getActivity();
-            CollapsingToolbarLayout appBarLayout = (CollapsingToolbarLayout) activity.findViewById(R.id.toolbar_layout);
-            if (appBarLayout != null) {
-                appBarLayout.setTitle(mItem.getContent().getObjectKey());
-            }
-        }
+
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
     }
 
     @Override
@@ -58,8 +79,30 @@ public class FeedbackItemDetailFragment extends Fragment {
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.feedbackitem_detail, container, false);
 
-        if (mItem != null) {
-            ((TextView) rootView.findViewById(R.id.feedbackitem_detail)).setText(mItem.getContent().getObjectKey());
+        ButterKnife.bind(this, rootView);
+
+        if (getArguments().containsKey(ARG_ITEM_OBJECT_KEY)) {
+            // TODO call the details endpoint with the ARG_ITM_ID (objectKey) and show that object
+            String type = getArguments().getString(ARG_ITEM_TYPE);
+            String path = getArguments().getString(ARG_ITEM_OBJECT_KEY);
+            switch (type) {
+                case "images":
+                    feedbackImage.setVisibility(View.VISIBLE);
+                    Glide.with(getActivity()).load(Uri.parse(
+                            NetworkService.BASE_URL + path)).into(feedbackImage);
+
+                    break;
+            }
+
+            Activity activity = this.getActivity();
+            CollapsingToolbarLayout appBarLayout = (CollapsingToolbarLayout) activity.findViewById(R.id.toolbar_layout);
+            if (appBarLayout != null) {
+                appBarLayout.setTitle(path);
+            }
+
+            if (path != null) {
+                ((TextView) rootView.findViewById(R.id.feedbackitem_detail)).setText(path);
+            }
         }
 
         return rootView;

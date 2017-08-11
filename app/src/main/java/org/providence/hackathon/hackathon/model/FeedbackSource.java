@@ -18,6 +18,13 @@ public class FeedbackSource implements Parcelable {
     public String content_type;
     public String createdDate;
 
+    public FeedbackSource() {
+    }
+
+    public FeedbackSource(String objectKey) {
+        this.objectKey = objectKey;
+    }
+
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault());
     //"createdDate": "2017-08-10T17:46:11+00:00"
     public Date getCreatedDate() {
