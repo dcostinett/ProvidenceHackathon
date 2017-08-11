@@ -13,12 +13,14 @@ import org.providence.hackathon.hackathon.customview.VisualizerView;
 import org.providence.hackathon.hackathon.model.AudioFeedback;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import okhttp3.MediaType;
-import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
 
 public class RecordingActivity extends BaseActivity {
@@ -170,12 +172,22 @@ public class RecordingActivity extends BaseActivity {
         // send audio file to server, finish();
         File audioFeedback = new File(mAudioFileName);
 
-        RequestBody feedbackRequest = RequestBody.create(MediaType.parse("multipart/form-data"), audioFeedback);
-        MultipartBody.Part body = MultipartBody.Part.createFormData("upload", audioFeedback.getName(), feedbackRequest);
-        RequestBody name = RequestBody.create(MediaType.parse("multipart/form-data"), "feedback_audio");
+        byte[] buf = null;
+
+        try {
+            InputStream in = new FileInputStream(audioFeedback.getPath());
+            buf = new byte[in.available()];
+            in.read(buf, 0, buf.length);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        RequestBody body = RequestBody.create(MediaType.parse("application/octet-stream"), buf);
 
         if (audioFeedback.exists()) {
-            service.postAudioFeedback(this, new AudioFeedback(body, name));
+            service.postAudioFeedback(this, new AudioFeedback(body));
         }
 
         finish();

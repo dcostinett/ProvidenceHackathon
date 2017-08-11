@@ -2,6 +2,8 @@ package org.providence.hackathon.hackathon;
 
 import android.app.Activity;
 import android.content.Context;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -15,7 +17,7 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 
-import org.providence.hackathon.hackathon.model.FeedbackItem;
+import java.io.IOException;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -55,8 +57,6 @@ public class FeedbackItemDetailFragment extends Fragment {
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
-
     }
 
     @Override
@@ -83,8 +83,8 @@ public class FeedbackItemDetailFragment extends Fragment {
 
         if (getArguments().containsKey(ARG_ITEM_OBJECT_KEY)) {
             // TODO call the details endpoint with the ARG_ITM_ID (objectKey) and show that object
-            String type = getArguments().getString(ARG_ITEM_TYPE);
             String path = getArguments().getString(ARG_ITEM_OBJECT_KEY);
+            String type = getType(path);
             switch (type) {
                 case "images":
                     feedbackImage.setVisibility(View.VISIBLE);
@@ -92,6 +92,16 @@ public class FeedbackItemDetailFragment extends Fragment {
                             NetworkService.BASE_URL + path)).into(feedbackImage);
 
                     break;
+                case "audio":
+                    MediaPlayer player = new MediaPlayer();
+                    player.setAudioStreamType(AudioManager.STREAM_MUSIC);
+                    try {
+                        player.setDataSource(NetworkService.BASE_URL + path);
+                        player.prepare();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    player.start();
             }
 
             Activity activity = this.getActivity();
@@ -106,5 +116,17 @@ public class FeedbackItemDetailFragment extends Fragment {
         }
 
         return rootView;
+    }
+
+    private String getType(String path) {
+        String ext = path.substring(path.lastIndexOf(".") + 1, path.length());
+        switch (ext) {
+            case "jpg":
+                return "images";
+            case "mp3":
+                return "audio";
+        }
+
+        return "unknown";
     }
 }

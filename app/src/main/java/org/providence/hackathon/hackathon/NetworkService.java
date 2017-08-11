@@ -5,26 +5,19 @@ import android.content.Intent;
 import android.os.Parcelable;
 import android.util.Log;
 
-import com.google.android.gms.common.annotation.KeepForSdkWithFieldsAndMethods;
-
 import org.providence.hackathon.hackathon.model.ApiResponse;
 import org.providence.hackathon.hackathon.model.AudioFeedback;
 import org.providence.hackathon.hackathon.model.FeedbackItem;
-import org.providence.hackathon.hackathon.model.Hits;
 import org.providence.hackathon.hackathon.model.ImageFeedback;
 import org.providence.hackathon.hackathon.model.SearchCriteria;
 import org.providence.hackathon.hackathon.model.SearchResponse;
 import org.providence.hackathon.hackathon.model.TextFeedback;
 
-import java.io.File;
 import java.io.IOException;
-import java.io.LineNumberInputStream;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 import okhttp3.Interceptor;
-import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -34,19 +27,14 @@ import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
-import retrofit2.http.Header;
 import retrofit2.http.Headers;
-import retrofit2.http.Multipart;
 import retrofit2.http.POST;
 import retrofit2.http.PUT;
-import retrofit2.http.Part;
 import retrofit2.http.Path;
 import rx.Observable;
 import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
-
-import static org.providence.hackathon.hackathon.FeedbackItemDetailFragment.EXTRA_FEEDBACK_OBJECT;
 
 /**
  *
@@ -66,7 +54,7 @@ public class NetworkService {
         public okhttp3.Response intercept(Chain chain) throws IOException {
             Request originalRequest = chain.request();
 
-            Request.Builder builder = originalRequest.newBuilder().header("Content-Type", "multipart/form-data");
+            Request.Builder builder = originalRequest.newBuilder().header("Content-Type", "application/octet-stream");
 
             Request newRequest = builder.build();
             return chain.proceed(newRequest);
@@ -102,13 +90,13 @@ public class NetworkService {
         @PUT("/test/text/{id}")
         Observable<Response<ApiResponse>> sendTextFeedback(@Path("id") String name, @Body TextFeedback feedback);
 
-        @Multipart
+        @Headers("Content-Type: application/octet-stream")
         @PUT("/test/photo/{id}")
-        Observable<Response<ApiResponse>> sendImageFeedback(@Path("id") String fileName, @Part MultipartBody.Part image, @Part("name") RequestBody name);
+        Observable<Response<ApiResponse>> sendImageFeedback(@Path("id") String fileName, @Body RequestBody data);
 
-        @Multipart
+        @Headers("Content-Type: application/octet-stream")
         @PUT("/test/voice/{id}")
-        Observable<Response<ApiResponse>> sendAudioFeedback(@Path("id") String fileName, @Part MultipartBody.Part audio, @Part("name") RequestBody name);
+        Observable<Response<ApiResponse>> sendAudioFeedback(@Path("id") String fileName, @Body RequestBody data);
 
         @GET("/test/voice/{id}")
         Observable<Response<FeedbackItem>> getAudioDetail(@Path("id") String objectKey);
@@ -174,7 +162,7 @@ public class NetworkService {
 
     public void postAudioFeedback(final Context context, final AudioFeedback feedback) {
         String timestamp = String.valueOf(new Date().getTime()) + ".mp3";
-        mClient.sendAudioFeedback(timestamp, feedback.audio, feedback.name)
+        mClient.sendAudioFeedback(timestamp, feedback.data)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new rx.Subscriber<Response<ApiResponse>>() {
@@ -200,7 +188,7 @@ public class NetworkService {
 
     public void postImageFeedback(final Context context, final ImageFeedback feedback) {
         String timestamp = String.valueOf(new Date().getTime()) + ".jpg";
-        mClient.sendImageFeedback(timestamp, feedback.image, feedback.name)
+        mClient.sendImageFeedback(timestamp, feedback.image)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Subscriber<Response<ApiResponse>>() {

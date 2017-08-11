@@ -12,14 +12,12 @@ import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.media.MediaRecorder;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -37,15 +35,17 @@ import org.providence.hackathon.hackathon.model.TextFeedback;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import okhttp3.MediaType;
-import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
 
 public class CustomerFeedbackActivity extends BaseActivity implements LocationListener,
@@ -229,11 +229,20 @@ public class CustomerFeedbackActivity extends BaseActivity implements LocationLi
         Log.d(TAG, "Image captured");
         // now upload bitmap to server
 
-        RequestBody feedbackRequest = RequestBody.create(MediaType.parse("image/jpeg"), feedbackImage);
-        MultipartBody.Part body = MultipartBody.Part.createFormData("upload", feedbackImage.getName(), feedbackRequest);
-        RequestBody name = RequestBody.create(MediaType.parse("multipart/form-data"), "feedback_image");
+        byte[] buf = null;
+        try {
+            InputStream in = new FileInputStream(feedbackImage.getPath());
+            buf = new byte[in.available()];
+            in.read(buf, 0, buf.length);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
-        service.postImageFeedback(this, new ImageFeedback(body, name));
+        RequestBody body = RequestBody.create(MediaType.parse("application/octet-stream"), buf);
+
+        service.postImageFeedback(this, new ImageFeedback(body));
     }
 
     @OnClick(R.id.btnSubmit)
